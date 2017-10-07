@@ -1,0 +1,7 @@
+{
+    "baseURL": "https://api.cloudflare.com/client/v4/",
+    "apiKey": "",
+    "zoneID": "",
+    "recordID": "",
+    "authEmail": ""
+}

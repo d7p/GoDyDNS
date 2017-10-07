@@ -31,18 +31,25 @@ type Options struct {
 
 func main() {
 	ip := getIP()
+
+	if !areIPsEqual(ip) {
+		setURL(ip, loadOptions())
+		ioutil.WriteFile("oldip", []byte(ip), os.FileMode(int(0664)))
+		os.Exit(0)
+	}
+
+	log.Print("IP is the same")
+}
+
+func areIPsEqual(ip string) bool {
 	oldIP, err := ioutil.ReadFile("oldip")
 	if err != nil {
 		if !strings.Contains(err.Error(), "no such file or directory") {
 			log.Fatal(err)
 		}
-	} else if ip == string(oldIP) {
-		log.Print("IP is the same")
-		os.Exit(0)
-	} else {
-		setURL(ip, loadOptions())
-		ioutil.WriteFile("oldip", []byte(ip), os.ModeDevice)
 	}
+
+	return ip == string(oldIP)
 }
 
 func getIP() string {
@@ -56,7 +63,6 @@ func getIP() string {
 		log.Fatal(err)
 	}
 	ip := string(content)
-	log.Printf("current ip is: %s", ip)
 	return ip
 }
 
@@ -89,7 +95,6 @@ func setURL(ip string, opt *Options) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("Status Code: %d\n", res.StatusCode)
 	if res.StatusCode == 400 || res.StatusCode == 401 || res.StatusCode == 500 {
 		log.Print(string(contents))
 		log.Fatalf("CloudFlare returned: %s", res.Status)
