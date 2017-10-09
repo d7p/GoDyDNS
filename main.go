@@ -26,6 +26,7 @@ type Options struct {
 	APIKey,
 	ZoneID,
 	RecordID,
+	RecordURL,
 	AuthEmail string
 }
 
@@ -33,7 +34,7 @@ func main() {
 	ip := getIP()
 
 	if !areIPsEqual(ip) {
-		setURL(ip, loadOptions())
+		setIP(ip, loadOptions())
 		ioutil.WriteFile("oldip", []byte(ip), os.FileMode(int(0664)))
 		os.Exit(0)
 	}
@@ -66,10 +67,10 @@ func getIP() string {
 	return ip
 }
 
-func setURL(ip string, opt *Options) {
+func setIP(ip string, opt *Options) {
 	body := &DNSPutRequet{
 		RecordType: "A",
-		Name:       "dydns.codefission.co.uk",
+		Name:       opt.RecordURL,
 		TTL:        120,
 		Proxied:    false,
 	}
@@ -90,11 +91,13 @@ func setURL(ip string, opt *Options) {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	defer res.Body.Close()
 	contents, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	if res.StatusCode == 400 || res.StatusCode == 401 || res.StatusCode == 500 {
 		log.Print(string(contents))
 		log.Fatalf("CloudFlare returned: %s", res.Status)
